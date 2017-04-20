@@ -4,7 +4,7 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <stdarg.h>
-# include "../libft/libft.h"
+# include "../incs/libft.h"
 # define NUM_FLAGS 5
 # define NUM_LENGTH 2
 # define MINUS_IDX 0
