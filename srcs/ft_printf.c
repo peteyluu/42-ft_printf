@@ -35,8 +35,8 @@ int	ft_printf(const char *format, ...)
 		}
 		fmt_cpy++;
 	}
-//	dispose_structs(&info, &output);
-	dispose_structs(&info);
+	dispose_structs(&info, &output);
+	//dispose_structs(&info);
 	va_end(ap);
 	return (ret);
 }
@@ -51,14 +51,14 @@ int	is_dispose_arg(char spec)
 	return (0);
 }
 
-//void	dispose_structs(t_arg **ainfo, t_data **aoutput)
-void	dispose_structs(t_arg **ainfo)
+void	dispose_structs(t_arg **ainfo, t_data **aoutput)
+//void	dispose_structs(t_arg **ainfo)
 {
 	ft_memdel((void**)&(*ainfo)->flags);
 	ft_memdel((void**)ainfo);
 	// redundancy???
-	//ft_memdel((void**)&(*aoutput)->result);
-	//ft_memdel((void**)aoutput);
+	ft_memdel((void**)&(*aoutput)->result);
+	ft_memdel((void**)aoutput);
 }
 
 char	*handle_va_arg(t_arg **ainfo, va_list ap)

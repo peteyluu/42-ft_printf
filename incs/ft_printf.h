@@ -81,8 +81,8 @@ char	*handle_va_arg(t_arg **ainfo, va_list ap);
 char	get_pad_ch(t_arg **ainfo, t_data **aoutput);
 void	init_info(t_arg **ainfo);
 void	init_output(t_data **aoutput);
-//void	dispose_structs(t_arg **ainfo, t_data **aoutput);
-void	dispose_structs(t_arg **ainfo);
+void	dispose_structs(t_arg **ainfo, t_data **aoutput);
+//void	dispose_structs(t_arg **ainfo);
 // increment width by 1, for flags '+' || ' '
 int	increment_width(t_arg **ainfo, t_data **aoutput);
 int	incr_width_hlpr(t_arg **ainfo, t_data **aoutput);
