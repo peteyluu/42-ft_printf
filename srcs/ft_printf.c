@@ -556,7 +556,7 @@ char	find_flag(t_arg **ainfo, t_data **aoutput)
 
 char	get_pad_ch(t_arg **ainfo, t_data **aoutput)
 {
-	if ((is_zero_flag(ainfo) && !is_left_just(ainfo)) && 
+	if ((is_zero_flag(ainfo) && (!is_left_just(ainfo)) && (*ainfo)->precis > (*aoutput)->len) ||
 		((*ainfo)->spec != 's' && ((*ainfo)->precis >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len)))
 		return ('0');
 	else if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'U'
