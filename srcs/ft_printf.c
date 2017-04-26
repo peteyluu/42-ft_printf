@@ -140,7 +140,9 @@ void	handle_va_arg(t_arg **ainfo, t_data **aoutput, char **aformat_cpy, va_list 
 	}
 	else if (spec == 'C' || (spec == 'c' && leng > 0))
 	{
-		(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
+		(*aoutput)->s_arg = ft_strnew(1);
+		*(*aoutput)->s_arg = va_arg(ap, int);
+		//(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
 		(*aoutput)->free_arg = 1;
 	}
 	else
