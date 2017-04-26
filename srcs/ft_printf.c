@@ -12,22 +12,26 @@ int	ft_printf(const char *format, ...)
 	info = NULL;
 	output = NULL;
 	fmt_cpy = (char*)format;
-	init_output(&output);
 	va_start(ap, format);
 	while (*fmt_cpy)
 	{
-		if (*fmt_cpy == '%')
+		if (*fmt_cpy == '%' && *(fmt_cpy + 1) != '\0')
 		{
 			fmt_cpy++;
+			init_output(&output);
 			init_info(&info);
 			populate_info(&fmt_cpy, &info, ap);
-			output->s_arg = handle_va_arg(&info, ap);
+			if (info->spec == '\0' && info->width == -1)
+				continue ;
+			handle_va_arg(&info, &output, &fmt_cpy, ap);
 			ret += populate_result(&info, &output);
-			ft_putstr(output->result);
-			ft_memdel((void**)&output->result);
-			if (is_dispose_arg(info->spec))
-				ft_memdel((void**)&output->s_arg);
+			ft_putstr_nbytes(output->result, output->width);
+			//ft_memdel((void**)&output->result);
+			//if (output->free_arg)
+			//	ft_memdel((void**)&output->s_arg);
 		}
+		else if (*fmt_cpy == '%' && *(fmt_cpy + 1) == '\0')
+			break ;
 		else
 		{
 			ft_putchar(*fmt_cpy);
@@ -35,112 +39,141 @@ int	ft_printf(const char *format, ...)
 		}
 		fmt_cpy++;
 	}
-	dispose_structs(&info, &output);
-	//dispose_structs(&info);
+	//dispose_structs(&info, &output);
 	va_end(ap);
 	return (ret);
 }
 
-int	is_dispose_arg(char spec)
+void	ft_putstr_nbytes(char *s, size_t n)
 {
-	if (spec == 'c' || spec == '%' || spec == 'd' || spec == 'i' ||
-		spec == 'D' || spec == 'o' || spec == 'O' || spec == 'u' ||
-		spec == 'U' || spec == 'x' || spec == 'X' || spec == 'p' ||
-		spec == 'S' || spec == 'C')
-		return (1);
-	return (0);
+	while (n--)
+	{
+		write(1, &*s, 1);
+		s++;
+	}
 }
 
 void	dispose_structs(t_arg **ainfo, t_data **aoutput)
-//void	dispose_structs(t_arg **ainfo)
 {
 	ft_memdel((void**)&(*ainfo)->flags);
 	ft_memdel((void**)ainfo);
-	// redundancy???
-	ft_memdel((void**)&(*aoutput)->result);
 	ft_memdel((void**)aoutput);
 }
 
-char	*handle_va_arg(t_arg **ainfo, va_list ap)
+void	handle_va_arg(t_arg **ainfo, t_data **aoutput, char **aformat_cpy, va_list ap)
 {
-	char	*s;
 	char	spec;
 	int	leng;
-	short	test;
-	signed char fuckyou;
+	wchar_t *ws_arg;
 
-	s = NULL;
 	spec = (*ainfo)->spec;
 	leng = (*ainfo)->leng;
 	if (spec == 's' && leng == none)
 	{
-		if (!(s = va_arg(ap, char*)))
-			s = "(null)";
+		if (!((*aoutput)->s_arg = va_arg(ap, char*)))
+			(*aoutput)->s_arg = "(null)";
 	}
 	else if (spec == 'd' || spec == 'i')
 	{
-		if (leng == h)
-		{
-			test = va_arg(ap, int);
-			s = ft_itoa((int)test);	
-		}
-		else if (leng == hh)
-		{
-			fuckyou = va_arg(ap, int);
-			s = ft_itoa((int)fuckyou);
-		}
-		else if (leng <= h)
-			s = ft_itoa(va_arg(ap, int));
-		else if (leng <= z)
-			s = intmax_to_a(va_arg(ap, intmax_t));
-
+		if (leng == hh)
+			(*aoutput)->s_arg = ft_itoa((int)(signed char)va_arg(ap, int));
+		else if (leng == h)
+			(*aoutput)->s_arg = ft_itoa((int)(short int)va_arg(ap, int));
+		else if (leng == ll)
+			(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg(ap, long long int));
+		else if (leng == l)
+			(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg(ap, long int));
+		else if (leng == j)
+			(*aoutput)->s_arg = intmax_to_a(va_arg(ap, intmax_t));
+		else if (leng == z)
+			(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg(ap, size_t));
+		else
+			(*aoutput)->s_arg = ft_itoa(va_arg(ap, int));
+		(*aoutput)->free_arg = 1;
 	}
 	else if ((spec == 'c' || spec == '%') && leng == none)
 	{
-		s = ft_strnew(1);
-		*s = (spec == 'c' ? va_arg(ap, int) : '%');
+		(*aoutput)->s_arg = ft_strnew(1);
+		*(*aoutput)->s_arg = (spec == 'c' ? va_arg(ap, int) : '%');
+		(*aoutput)->free_arg = 1;
 	}
-	else if (spec == 'x' || spec == 'X')
-		if (leng <= h)
-			s = uintmax_to_a_base((uintmax_t)va_arg(ap, unsigned int), 16, spec);
+	else if (spec == 'D')
+	{
+		(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg(ap, long int));
+		(*aoutput)->free_arg = 1;
+	}
+	else if (spec == 'O' || spec == 'U')
+	{
+		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)va_arg(ap, long int), get_base(spec), spec);
+		(*aoutput)->free_arg = 1;
+	}
+	else if (spec == 'o' || spec == 'u' || spec == 'x' || spec == 'X')
+	{
+		if (leng == hh)
+			(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned char)va_arg(ap, int), get_base(spec), spec);
+		else if (leng == h)
+			(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned short)va_arg(ap, int), get_base(spec), spec);
+		else if (leng == ll)
+			(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)va_arg(ap, unsigned long long), get_base(spec), spec);
+		else if (leng == l)
+			(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)va_arg(ap, unsigned long), get_base(spec), spec);
+		else if (leng == j || leng == z)
+			(*aoutput)->s_arg = uintmax_to_a_base(va_arg(ap, uintmax_t), get_base(spec), spec);
 		else
-			s = uintmax_to_a_base(va_arg(ap, uintmax_t), 16, spec);
-	else if (spec == 'o' || spec == 'O' || spec == 'u' || spec == 'D' || spec == 'U' || spec == 'p')
-		s = uintmax_to_a_base(va_arg(ap, uintmax_t), get_base(spec), spec);
-	else if (spec == 'S' || (spec == 's' && leng == l))
-		s = handle_wstr(va_arg(ap, wchar_t*));
-	else if (spec == 'C' || (spec == 'c' && leng == l))
-		s = handle_wch(va_arg(ap, wchar_t));
-	return (s);
+			(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned int)va_arg(ap, int), get_base(spec), spec);
+		(*aoutput)->free_arg = 1;
+	}
+	else if (spec == 'p')
+	{
+		(*aoutput)->s_arg = uintmax_to_a_base(va_arg(ap, uintmax_t), 16, spec);
+		(*aoutput)->free_arg = 1;
+	}
+	else if (spec == 'S' || (spec == 's' && leng > 0))
+	{
+		if (!(ws_arg = va_arg(ap, wchar_t*)))
+			(*aoutput)->s_arg = "(null)";
+		else
+		{
+			(*aoutput)->s_arg = handle_wstr(ws_arg, ainfo);
+			(*aoutput)->free_arg = 1;
+		}
+	}
+	else if (spec == 'C' || (spec == 'c' && leng > 0))
+	{
+		(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
+		(*aoutput)->free_arg = 1;
+	}
+	else
+	{
+		(*aoutput)->s_arg = ft_strnew(1);
+		*(*aoutput)->s_arg = **aformat_cpy++;
+		(*aoutput)->free_arg = 1;
+	}
 }
 
-void    wch_to_str(wchar_t wc, char **as)
+void	unicode_to_utf8(wchar_t c, char **as)
 {
-	// 7 bit unicode encoded as plain ascii
-	if (wc < 128)
+	if (c<(1<<7))// 7 bit Unicode encoded as plain ascii
 	{
-		*(*as)++ = (unsigned char)(wc);
+		*(*as)++ = (unsigned char)(c);
 	}
-	// 11 bit unicode encoded in 2 UTF-8 bytes
-	else if (wc < 2048)
+	else if (c<(1<<11))// 11 bit Unicode encoded in 2 UTF-8 bytes
 	{
-		*(*as)++ = (unsigned char)((wc>>6)|192);
-		*(*as)++ = (unsigned char)((wc&63)|128);
+		*(*as)++ = (unsigned char)((c>>6)|0xC0);
+		*(*as)++ = (unsigned char)((c&0x3F)|0x80);
 	}
-	// 16 bit unicode encoded in 3 UTF-8 bytes
-	else if (wc < 65536)
+	else if (c<(1<<16))// 16 bit Unicode encoded in 3 UTF-8 bytes
 	{
-		*(*as)++ = (unsigned char)(((wc>>12))|225);
-		*(*as)++ = (unsigned char)(((wc>>6)&63)|128);
-		*(*as)++ = (unsigned char)((wc&63)|128);
+		*(*as)++ = (unsigned char)(((c>>12))|0xE0);
+		*(*as)++ =  (unsigned char)(((c>>6)&0x3F)|0x80);
+		*(*as)++ =  (unsigned char)((c&0x3F)|0x80);
 	}
-	// 21 bit unicode encoded in 4 UTF-8 bytes
-	else if (wc < 2097152)
+	else if (c<(1<<21))// 21 bit Unicode encoded in 4 UTF-8 bytes
 	{
-		*(*as)++ = (unsigned char)(((wc>>18))|240);
-		*(*as)++ = (unsigned char)(((wc>>12)&63)|128);
-		*(*as)++ = (unsigned char)(((wc>>6)&63)|128);
-		*(*as)++ = (unsigned char)((wc&63)|128);
+		*(*as)++ = (unsigned char)(((c>>18))|0xF0);
+		*(*as)++ = (unsigned char)(((c>>12)&0x3F)|0x80);
+		*(*as)++ = (unsigned char)(((c>>6)&0x3F)|0x80);
+		*(*as)++ = (unsigned char)((c&0x3F)|0x80);
 	}
 }
 
@@ -150,7 +183,7 @@ int 	get_byte_cnt(wchar_t wc)
 		return (1);
 	else if (wc < 2048)
 		return (2);
-	else if (wc < 65535)
+	else if (wc < 65536)
 		return (3);
 	else
 		return (4);
@@ -165,40 +198,56 @@ char	*handle_wch(wchar_t wc)
 	num_bytes = get_byte_cnt(wc);
 	s = ft_strnew(num_bytes);
 	ps = s;
-	wch_to_str(wc, &s);
+	unicode_to_utf8(wc, &s);
 	return (ps);
 }
 
-char	*handle_wstr(wchar_t *ws)
+char	*handle_wstr(wchar_t *ws, t_arg **ainfo)
 {
-	wchar_t *pws;
 	int	num_bytes;
 	char	*s;
 	char	*ps;
+	int	i;
+	int	cnt;
+	int	tmp;
+	int	precis_flag;
 
+	precis_flag = 0;
+	if ((*ainfo)->precis != -1)
+		precis_flag = 1;
 	num_bytes = 0;
-	pws = ws;
-	while (*pws)
-		num_bytes += get_byte_cnt(*pws++);
+	cnt = 0;
+	i = 0;
+	while (ws[i])
+	{
+		tmp = get_byte_cnt(ws[i++]);
+		if (precis_flag)
+		{
+			(*ainfo)->precis -= tmp;
+			if ((*ainfo)->precis < 0)
+			{
+				(*ainfo)->precis = -1;
+				break ;
+			}
+		}
+		num_bytes += tmp;
+		cnt++;
+	}
 	s = ft_strnew(num_bytes);
 	ps = s;
-	while (*ws)
-		wch_to_str(*ws++, &s);
+	i = 0;
+	while (i < cnt)
+		unicode_to_utf8(ws[i++], &s);
 	return (ps);
 }
 
 int	populate_result(t_arg **ainfo, t_data **aoutput)
 {
-	(*aoutput)->len = ft_strlen((*aoutput)->s_arg);
+	(*aoutput)->len = ft_strlen((*aoutput)->s_arg);	
+	if ((*aoutput)->len == 0 && ((*ainfo)->spec == 'c' || (*ainfo)->spec == 'C'))
+		(*aoutput)->len = 1;
 	get_min_width(ainfo, aoutput);
 	get_precision(ainfo, aoutput);
-	if ((*aoutput)->len == 0 && (*ainfo)->spec == 'c')
-	{
-		if ((*aoutput)->width < 2)
-			return (1);
-		else
-			(*aoutput)->len = 1;
-	}
 	update_result(ainfo, aoutput);
 	if (is_width_pad(ainfo, (*aoutput)->len))
 		width_padding(ainfo, aoutput);
@@ -212,27 +261,36 @@ void	pop_res_hlpr(t_arg **ainfo, t_data **aoutput)
 	int	 offset_width;
 
 	offset_width = 0;
+	// delete line 266?
 	if ((*ainfo)->flags[PLUS_IDX] && *(*aoutput)->s_arg != '-' &&
 		((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' || (*ainfo)->spec == 'D'))
 	{
 		*(*aoutput)->presult++ = '+';
-		offset_width = 1;
+		offset_width++;
 	}
 	// 4-18-17 -> added (*ainfo)->spec != '%'
-	else if ((*ainfo)->flags[SPACE_IDX] && (*ainfo)->spec != '%' && is_valid_space_flag(ainfo, aoutput))
+	// deleted `#is_valid_space_flag(ainfo, aoutput))???
+	if ((*ainfo)->spec != 'p' && (*ainfo)->flags[SPACE_IDX] && is_valid_space_flag(ainfo, aoutput))
 	{
 		*(*aoutput)->presult++ = ' ';
-		offset_width = 1;
+		offset_width++;
 	}
-	else if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0)
+	if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0 &&
+		((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
 	{
 		*(*aoutput)->presult++ = '0';
-		offset_width = 1;
+		offset_width++;
 		if ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
 		{
 			*(*aoutput)->presult++ = (*ainfo)->spec;
-			offset_width = 2;
+			offset_width++;
 		}
+	}
+	if ((*ainfo)->spec == 'p')
+	{
+		*(*aoutput)->presult++ = '0';
+		*(*aoutput)->presult++ = 'x';
+		offset_width += 2;
 	}
 	ft_memcpy(((*aoutput)->presult), (*aoutput)->s_arg, (*aoutput)->width - offset_width);
 }
@@ -241,7 +299,7 @@ void	width_padding(t_arg **ainfo, t_data **aoutput)
 {
 	char	pad_ch;
 	pad_ch = get_pad_ch(ainfo, aoutput);
-	if (is_left_just(ainfo))
+	if (is_left_just(ainfo) || ((*ainfo)->spec == 'p' && is_zero_flag(ainfo)))
 		handle_left_just(ainfo, aoutput, pad_ch);
 	else
 		handle_right_just(ainfo, aoutput, pad_ch);
@@ -327,8 +385,8 @@ void	handle_right_just(t_arg **ainfo, t_data **aoutput, char c)
 
 	j = 0;
 	// special case when flag '#' is present and spec == 'x' || 'X'
-	if (ft_strcmp((*aoutput)->s_arg, "0") != 0 && is_hash_flag(ainfo)
-		&& ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X') && is_valid_x_width(ainfo, aoutput))
+	if ((*ainfo)->spec == 'p' || ((is_hash_flag(ainfo)
+		&& ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X') && is_valid_x_width(ainfo, aoutput))))
 		i = (*aoutput)->width - (*aoutput)->len - 2;
 	// info->width must be > info->precision to pad right justify with ' '...
 	else if ((*ainfo)->precis != -1 && (*ainfo)->width != -1 && (*ainfo)->width > (*ainfo)->precis)
@@ -338,9 +396,12 @@ void	handle_right_just(t_arg **ainfo, t_data **aoutput, char c)
 			handle_right_hlpr0(ainfo, aoutput, &i);
 		// enters width padding -> handle right just, need to offset the 'pad' len of i...
 		// refactor??? hacky condition for spec == 'o' || spec == 'u' || 'x' || 'X' 
-		else if ((*ainfo)->precis < (*aoutput)->len && ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' ||
-				(*ainfo)->spec == 'u' || (*ainfo)->spec == 'U' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
+		else if ((*ainfo)->precis < (*aoutput)->len && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' ||
+			(*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' ||
+			(*ainfo)->spec == 'U' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
 			handle_right_hlpr1(ainfo, aoutput, &i);
+		else if ((*aoutput)->len > (*ainfo)->precis && (*ainfo)->spec != 's')
+			i = (*aoutput)->width - (*aoutput)->len;
 	}
 	else
 		i = (*aoutput)->width - (*aoutput)->len;
@@ -348,7 +409,8 @@ void	handle_right_just(t_arg **ainfo, t_data **aoutput, char c)
 	handle_right_pads(ainfo, aoutput, c, &i);
 	if (*(*aoutput)->s_arg == '-' && c == '0' && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
 		j = 1;
-	ft_memcpy(((*aoutput)->presult) + i, (*aoutput)->s_arg + j, (*aoutput)->width - i - j);
+	//ft_memcpy(((*aoutput)->presult) + i, (*aoutput)->s_arg + j, (*aoutput)->width - i - j);
+	ft_memcpy(((*aoutput)->presult) + i, (*aoutput)->s_arg + j, (*aoutput)->width - ((*aoutput)->presult - (*aoutput)->result) - i);
 }
 
 void	handle_right_hlpr1(t_arg **ainfo, t_data **aoutput, int *ai)
@@ -389,6 +451,8 @@ void	handle_right_hlpr0(t_arg **ainfo, t_data **aoutput, int *ai)
 	else if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0 &&
 		((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
 		j = 2;
+	else if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') && *(*aoutput)->s_arg == '-')
+		j = 1;
 	ft_memset(((*aoutput)->presult), ' ', *ai - j);
 	(*aoutput)->presult += (*ai - j);
 	if (j == 2)
@@ -474,9 +538,9 @@ char	find_flag(t_arg **ainfo, t_data **aoutput)
 		return (' ');
 	// MUST be s_arg != "0" to avoid double `00`
 	// swapped line 354 with 343 due to hierarchy...
-	else if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0)
+	else if ((is_hash_flag(ainfo) || (*ainfo)->spec == 'p'))
 	{
-		if ((*ainfo)->spec == 'x')
+		if ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'p')
 			return ('x');
 		else if ((*ainfo)->spec == 'X')
 			return ('X');
@@ -492,11 +556,10 @@ char	find_flag(t_arg **ainfo, t_data **aoutput)
 
 char	get_pad_ch(t_arg **ainfo, t_data **aoutput)
 {
-	// took out !is_left_just(ainfo) on line 494
-	if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') &&
-		((is_zero_flag(ainfo) && !is_left_just(ainfo)) || (*ainfo)->precis >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len))
+	if ((is_zero_flag(ainfo) && !is_left_just(ainfo)) || 
+		((*ainfo)->spec != 's' && ((*ainfo)->precis >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len)))
 		return ('0');
-	if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'U'
+	else if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'U'
 		|| (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == 'D')
 	{
 		if ((*ainfo)->precis >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len)
@@ -516,29 +579,39 @@ void	update_result(t_arg **ainfo, t_data **aoutput)
 
 int	increment_width(t_arg **ainfo, t_data **aoutput)
 {
-	if (is_plus_flag(ainfo) && !is_valid_width(ainfo, aoutput) && *(*aoutput)->s_arg != '-' &&
+	int	cnt;
+
+	cnt = 0;
+	// took out !is_valid_width(ainfo, aoutput) &&
+	if (is_plus_flag(ainfo) && !is_valid_width(ainfo, aoutput) && *(*aoutput)->s_arg != '-' && (*ainfo)->spec != 'p' &&
 		((*aoutput)->len >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len))
-		return (1);
+		cnt++;
 	// 4-18-17 -> added (*ainfo)->spec != '%'
 	// if flag ' ' is present and has enough width to insert the flag ' '
-	else if (is_space_flag(ainfo) && (*ainfo)->spec != '%' && (*ainfo)->spec != 'c' && is_valid_space_flag(ainfo, aoutput) &&
+	if (is_space_flag(ainfo) && is_valid_space_flag(ainfo, aoutput) &&
 		((*aoutput)->width <= (*ainfo)->precis || (*aoutput)->width <= (*aoutput)->len))
-		return (1);
+		cnt++;
 	// if flag '#' is present and (*aoutput)->s_arg != "0" and len >= width
 	// if flag '#' && spec 'x' || 'X' && (*aoutput)->s_arg != "0", increment width by 2 
-	else if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0)
+	if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0)
 	{
 		if ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
-			return (incr_width_hlpr(ainfo, aoutput));
-		else if ((*aoutput)->len >= (*aoutput)->width)
-			return (1);
+			cnt += incr_width_hlpr(ainfo, aoutput);
+		else if ((*aoutput)->len >= (*aoutput)->width && ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O'))
+			cnt++;
 	}
-	return (0);
+	if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') &&
+		(*ainfo)->precis > (*aoutput)->len && (*ainfo)->precis >= (*aoutput)->width && *(*aoutput)->s_arg == '-')
+		cnt++;
+	if ((*ainfo)->spec == 'p')
+		cnt += incr_width_hlpr(ainfo, aoutput);
+	return (cnt);
 }
 
 int	is_valid_space_flag(t_arg **ainfo, t_data **aoutput)
 {
-	if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') && *(*aoutput)->s_arg == '-')
+	if (((((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') && (*(*aoutput)->s_arg == '-' || is_plus_flag(ainfo))) ||
+	(*ainfo)->spec == 'u' || (*ainfo)->spec == 'U' || (*ainfo)->spec == 'c' || (*ainfo)->spec == 'o' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == '%' || (*ainfo)->spec == 's' || (*ainfo)->spec == 'C' || (*ainfo)->spec == 'S') || (*ainfo)->spec == 'p')
 		return (0);
 	return (1);
 }
@@ -580,7 +653,7 @@ int	is_zero_flag(t_arg **ainfo)
 // checks if '+' flag is present for specifier 'd' and 'i'
 int	is_plus_flag(t_arg **ainfo)
 {
-	if ((*ainfo)->flags[PLUS_IDX] && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' || (*ainfo)->spec == 'D'))
+	if ((*ainfo)->flags[PLUS_IDX] && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' || (*ainfo)->spec == 'D' || (*ainfo)->spec == 'p'))
 		return (1);
 	return (0);
 }
@@ -610,25 +683,25 @@ void	get_precision(t_arg **ainfo, t_data **aoutput)
 				(*ainfo)->precis = (*aoutput)->len;
 			else if ((*ainfo)->precis > (*aoutput)->width)
 				(*aoutput)->width = (*ainfo)->precis;
-			if (*(*aoutput)->s_arg == '-' && (*ainfo)->precis == (*aoutput)->width)
-				(*aoutput)->width++;
+			//if (*(*aoutput)->s_arg == '-' && (*ainfo)->precis > (*aoutput)->len)
+			//	(*aoutput)->width++;
 		}
 		else if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'U'
-			|| (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == 'D')
+			|| (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == 'D' || (*ainfo)->spec == 'p')
 		{
 			// if spec == 'o' AND precision && s_arg == 0 and width <= 0 --> no chars are printed unless a '#' flag is present
 			// if spec == 'x' || 'X', precision AND s_arg == 0, width <= 0, '#' flag is present, set width to 0
 			if ((*ainfo)->precis == 0 && ft_strcmp((*aoutput)->s_arg, "0") == 0 && (*ainfo)->width <= 0)
 			{
-				if (!is_hash_flag(ainfo) || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
+				if (!is_hash_flag(ainfo) || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == 'p')
 					(*aoutput)->width = 0;
 			}
 			else if ((*ainfo)->precis > (*aoutput)->width)
 				(*aoutput)->width = (*ainfo)->precis;
 		}
 	}
-	else if ((*ainfo)->precis == -1 && ft_strcmp((*aoutput)->s_arg, "0") == 0)
-		(*ainfo)->precis = 0;
+	//else if ((*ainfo)->precis == -1 && ft_strcmp((*aoutput)->s_arg, "0") == 0)
+	//	(*ainfo)->precis = 0;
 }
 
 void	get_min_width(t_arg **ainfo, t_data **aoutput)
@@ -677,17 +750,35 @@ void	populate_length(char **aformat_cpy, t_arg **ainfo)
 int	get_length(char **aformat_cpy)
 {
 	if (**aformat_cpy == 'h' && *(*aformat_cpy + 1) == 'h')
+	{
+		(*aformat_cpy) += 2;
 		return (hh);
+	}
 	else if (**aformat_cpy == 'l' && *(*aformat_cpy + 1) == 'l')
+	{
+		(*aformat_cpy) += 2;
 		return (ll);
+	}
 	else if (**aformat_cpy == 'h')
+	{
+		(*aformat_cpy)++;
 		return (h);
+	}
 	else if (**aformat_cpy == 'l')
+	{
+		(*aformat_cpy)++;
 		return (l);
+	}
 	else if (**aformat_cpy == 'j')
+	{
+		(*aformat_cpy)++;
 		return (j);
+	}
 	else if (**aformat_cpy == 'z')
+	{
+		(*aformat_cpy)++;
 		return (z);
+	}
 	return (0);
 }
 
@@ -712,12 +803,19 @@ void	populate_flags(char **aformat_cpy, t_arg **ainfo)
 
 void	populate_width(char **aformat_cpy, t_arg **ainfo, va_list ap)
 {
-	if (ft_isdigit(**aformat_cpy))
-		(*ainfo)->width = get_num(aformat_cpy);
-	else if (**aformat_cpy == '*')
+	while (ft_isdigit(**aformat_cpy) || **aformat_cpy == '*')
 	{
-		(*ainfo)->width = va_arg(ap, int);
-		(*aformat_cpy)++;
+		if (ft_isdigit(**aformat_cpy))
+			(*ainfo)->width = get_num(aformat_cpy);
+		else if (**aformat_cpy == '*')
+		{
+			if (((*ainfo)->width = va_arg(ap, int)) < 0)
+			{
+				(*ainfo)->flags[MINUS_IDX] = 1;
+				(*ainfo)->width *= -1;
+			}
+			(*aformat_cpy)++;
+		}
 	}
 }
 
@@ -730,7 +828,8 @@ void	populate_precision(char **aformat_cpy, t_arg **ainfo, va_list ap)
 			(*ainfo)->precis = get_num(aformat_cpy);
 		else if (**aformat_cpy == '*')
 		{
-			(*ainfo)->precis = va_arg(ap, int);
+			if (((*ainfo)->precis = va_arg(ap, int)) < 0)
+				(*ainfo)->precis = -1;
 			(*aformat_cpy)++;
 		}
 		else
@@ -747,7 +846,18 @@ void	populate_specifier(char **aformat_cpy, t_arg **ainfo)
 			(*ainfo)->spec = **aformat_cpy;
 			break ;
 		}
-		(*aformat_cpy)++;
+		else
+		{
+			if (is_flag(**aformat_cpy))
+			{
+				(*ainfo)->flags[get_idx_flag(**aformat_cpy)] = '1';
+				(*aformat_cpy)++;
+			}
+			else if (is_length(**aformat_cpy))
+				populate_length(aformat_cpy, ainfo);
+			else
+				break ;
+		}
 	}
 }
 
@@ -799,6 +909,7 @@ void	init_output(t_data **aoutput)
 	if (!*aoutput)
 		*aoutput = (t_data*)malloc(sizeof(t_data));
 	(*aoutput)->s_arg = NULL;
+	(*aoutput)->free_arg = 0;
 	(*aoutput)->len = 0;
 	(*aoutput)->flag = 0;
 	(*aoutput)->width = 0;
@@ -893,30 +1004,23 @@ char	*uintmax_to_a_base(uintmax_t value, int base, char spec)
 	char	*s;
 	char	*ps;
 	char	*b;
-	int	p;
 
 	b = (spec == 'X' ? "0123456789ABCDEF" : "0123456789abcdef");
-	p = (spec == 'p' ? 2 : 0);
 	if (value == 0)
 	{
-		if (!(s = ft_strnew(2)))
+		if (!(s = ft_strnew(1)))
 			return (NULL);
 		*s = '0';
 		return (s);
 	}
 	len = uintmax_numlen(value, base);
-	if (!(s = ft_strnew(len + p)))
+	if (!(s = ft_strnew(len)))
 		return (NULL);
 	ps = s;
 	while (value)
 	{
 		*ps++ = b[(value % base)];
 		value /= base;
-	}
-	if (p)
-	{
-		*ps++ = 'x';
-		*ps++ = '0';
 	}
 	return (ft_strrev(s));
 }

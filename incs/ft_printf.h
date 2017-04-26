@@ -37,6 +37,7 @@ typedef struct	s_arg
 typedef struct	s_data
 {
 	char	*s_arg;
+	int	free_arg;
 	int	len;
 	char	flag;
 	int	width;
@@ -45,7 +46,7 @@ typedef struct	s_data
 }		t_data;
 
 int	ft_printf(const char *format, ...);
-int	is_dispose_arg(char spec);
+void	ft_putstr_nbytes(char *s, size_t n);
 void	populate_info(char **aformat_cpy, t_arg **ainfo, va_list ap);
 void	populate_flags(char **aformat_cpy, t_arg **ainfo);
 void	populate_width(char **aformat_cpy, t_arg **ainfo, va_list ap);
@@ -77,7 +78,7 @@ void	handle_right_pads(t_arg **ainfo, t_data **aoutput, char c, int *ai);
 void	handle_right_pads0(t_data **aoutput, char c, int *ai);
 void	handle_right_pads1(t_data **aoutput, char c, int *ai);
 char	find_flag(t_arg **ainfo, t_data **aoutput);
-char	*handle_va_arg(t_arg **ainfo, va_list ap);
+void	handle_va_arg(t_arg **ainfo, t_data **aoutput, char **aformat_cpy, va_list ap);
 char	get_pad_ch(t_arg **ainfo, t_data **aoutput);
 void	init_info(t_arg **ainfo);
 void	init_output(t_data **aoutput);
@@ -102,8 +103,8 @@ char	*intmax_to_a(intmax_t value);
 // perhaps rename later?
 int	is_valid_x_width(t_arg **ainfo, t_data **aoutput);
 /* wide character strings */
-char	*handle_wstr(wchar_t *ws);
+char	*handle_wstr(wchar_t *ws, t_arg **ainfo);
 int	get_byte_cnt(wchar_t wc);
-void	wch_to_str(wchar_t wc, char **as);
+void	unicode_to_utf8(wchar_t wc, char **as);
 char	*handle_wch(wchar_t wc);
 #endif
