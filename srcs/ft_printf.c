@@ -26,9 +26,9 @@ int	ft_printf(const char *format, ...)
 			handle_va_arg(&info, &output, &fmt_cpy, ap);
 			ret += populate_result(&info, &output);
 			ft_putstr_nbytes(output->result, output->width);
-			//ft_memdel((void**)&output->result);
-			//if (output->free_arg)
-			//	ft_memdel((void**)&output->s_arg);
+			ft_memdel((void**)&output->result);
+			if (output->free_arg)
+				ft_memdel((void**)&output->s_arg);
 		}
 		else if (*fmt_cpy == '%' && *(fmt_cpy + 1) == '\0')
 			break ;
@@ -39,7 +39,7 @@ int	ft_printf(const char *format, ...)
 		}
 		fmt_cpy++;
 	}
-	//dispose_structs(&info, &output);
+	dispose_structs(&info, &output);
 	va_end(ap);
 	return (ret);
 }
@@ -140,9 +140,9 @@ void	handle_va_arg(t_arg **ainfo, t_data **aoutput, char **aformat_cpy, va_list 
 	}
 	else if (spec == 'C' || (spec == 'c' && leng > 0))
 	{
-		(*aoutput)->s_arg = ft_strnew(1);
-		*(*aoutput)->s_arg = va_arg(ap, int);
-		//(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
+		//(*aoutput)->s_arg = ft_strnew(1);
+		//*(*aoutput)->s_arg = va_arg(ap, int);
+		(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
 		(*aoutput)->free_arg = 1;
 	}
 	else
@@ -317,7 +317,7 @@ void	handle_left_just(t_arg **ainfo, t_data **aoutput, char c)
 	int	k;
 
 	// below condition applies only to when spec is 's' || 'd' || 'i' (line 165)
-	if ((*ainfo)->precis != -1 && (*ainfo)->precis < (*aoutput)->len &&
+	if ((*ainfo)->precis != -1 && (*ainfo)->precis != 0 && (*ainfo)->precis < (*aoutput)->len &&
 		((*ainfo)->spec == 's' || (*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
 		i = (*ainfo)->precis;
 	// below condition applies only to spec is (!is_hash_flag && ('o' || 'u')) || 'x' || 'X'
@@ -558,8 +558,11 @@ char	find_flag(t_arg **ainfo, t_data **aoutput)
 
 char	get_pad_ch(t_arg **ainfo, t_data **aoutput)
 {
-	if ((is_zero_flag(ainfo) && !is_left_just(ainfo) && (*ainfo)->precis == -1) || (*ainfo)->precis > (*aoutput)->len ||
-		((*ainfo)->spec != 's' && ((*ainfo)->precis >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len)))
+	// took out (*ainfo)->spec != 's'
+	if (((is_zero_flag(ainfo) && !is_left_just(ainfo) && (((*ainfo)->precis == -1 && (*ainfo)->width > (*aoutput)->len) || ((*ainfo)->precis == 0 && (*ainfo)->spec != 'd' && (*ainfo)->spec != 'i')))  		|| ((*ainfo)->spec != 's' && (*ainfo)->precis > (*aoutput)->len)
+		|| ((*ainfo)->spec != 's' && ((*ainfo)->precis >= (*aoutput)->width
+		|| (*ainfo)->precis > (*aoutput)->len))
+		|| ((*ainfo)->precis == (*aoutput)->len && *(*aoutput)->s_arg == '-')))
 		return ('0');
 	else if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'U'
 		|| (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X' || (*ainfo)->spec == 'D')
@@ -572,6 +575,14 @@ char	get_pad_ch(t_arg **ainfo, t_data **aoutput)
 	}
 	return (' ');
 }
+
+//int	is_valid_precis_pad(t_arg **ainfo, t_data **aoutput)
+//{
+//	int	tmp;
+//
+//	if ((tmp = (*ainfo)->precis - ((*aoutput)->len - 1)) > 1)
+//	
+//}
 
 void	update_result(t_arg **ainfo, t_data **aoutput)
 {
@@ -681,8 +692,8 @@ void	get_precision(t_arg **ainfo, t_data **aoutput)
 				if ((*ainfo)->width == -1)
 					(*aoutput)->width = 0;
 			}
-			else if ((*ainfo)->precis <= (*aoutput)->len)
-				(*ainfo)->precis = (*aoutput)->len;
+			//else if ((*ainfo)->precis <= (*aoutput)->len)
+			//	(*ainfo)->precis = (*aoutput)->len;
 			else if ((*ainfo)->precis > (*aoutput)->width)
 				(*aoutput)->width = (*ainfo)->precis;
 			//if (*(*aoutput)->s_arg == '-' && (*ainfo)->precis > (*aoutput)->len)
@@ -745,42 +756,38 @@ void	populate_info(char **aformat_cpy, t_arg **ainfo, va_list ap)
 
 void	populate_length(char **aformat_cpy, t_arg **ainfo)
 {
-	if (is_length(**aformat_cpy))
-		(*ainfo)->leng = get_length(aformat_cpy);
+	int	tmp;
+
+	while (**aformat_cpy)
+	{
+		if (is_length(**aformat_cpy))
+		{
+			tmp = get_length(aformat_cpy);
+			if (tmp > (*ainfo)->leng)
+				(*ainfo)->leng = tmp;
+			if (tmp == hh || tmp == ll)
+				(*aformat_cpy)++;
+			(*aformat_cpy)++;
+		}
+		else
+			break ;
+	}
 }
 
 int	get_length(char **aformat_cpy)
 {
 	if (**aformat_cpy == 'h' && *(*aformat_cpy + 1) == 'h')
-	{
-		(*aformat_cpy) += 2;
 		return (hh);
-	}
 	else if (**aformat_cpy == 'l' && *(*aformat_cpy + 1) == 'l')
-	{
-		(*aformat_cpy) += 2;
 		return (ll);
-	}
 	else if (**aformat_cpy == 'h')
-	{
-		(*aformat_cpy)++;
 		return (h);
-	}
 	else if (**aformat_cpy == 'l')
-	{
-		(*aformat_cpy)++;
 		return (l);
-	}
 	else if (**aformat_cpy == 'j')
-	{
-		(*aformat_cpy)++;
 		return (j);
-	}
 	else if (**aformat_cpy == 'z')
-	{
-		(*aformat_cpy)++;
 		return (z);
-	}
 	return (0);
 }
 
@@ -805,7 +812,8 @@ void	populate_flags(char **aformat_cpy, t_arg **ainfo)
 
 void	populate_width(char **aformat_cpy, t_arg **ainfo, va_list ap)
 {
-	while (ft_isdigit(**aformat_cpy) || **aformat_cpy == '*')
+	// took out ft_isdigit || **aformat_cpy == '*' on line 809
+	while (**aformat_cpy)
 	{
 		if (ft_isdigit(**aformat_cpy))
 			(*ainfo)->width = get_num(aformat_cpy);
@@ -818,24 +826,31 @@ void	populate_width(char **aformat_cpy, t_arg **ainfo, va_list ap)
 			}
 			(*aformat_cpy)++;
 		}
+		else
+			break ;
 	}
 }
 
 void	populate_precision(char **aformat_cpy, t_arg **ainfo, va_list ap)
 {
-	if (**aformat_cpy == '.')
+	while (**aformat_cpy)
 	{
-		(*aformat_cpy)++;
-		if (ft_isdigit(**aformat_cpy))
-			(*ainfo)->precis = get_num(aformat_cpy);
-		else if (**aformat_cpy == '*')
+		if (**aformat_cpy == '.')
 		{
-			if (((*ainfo)->precis = va_arg(ap, int)) < 0)
-				(*ainfo)->precis = -1;
 			(*aformat_cpy)++;
+			if (ft_isdigit(**aformat_cpy))
+				(*ainfo)->precis = get_num(aformat_cpy);
+			else if (**aformat_cpy == '*')
+			{
+				if (((*ainfo)->precis = va_arg(ap, int)) < 0)
+					(*ainfo)->precis = -1;
+				(*aformat_cpy)++;
+			}
+			else
+				(*ainfo)->precis = 0;
 		}
 		else
-			(*ainfo)->precis = 0;
+			break ;
 	}
 }
 
@@ -855,8 +870,6 @@ void	populate_specifier(char **aformat_cpy, t_arg **ainfo)
 				(*ainfo)->flags[get_idx_flag(**aformat_cpy)] = '1';
 				(*aformat_cpy)++;
 			}
-			else if (is_length(**aformat_cpy))
-				populate_length(aformat_cpy, ainfo);
 			else
 				break ;
 		}
