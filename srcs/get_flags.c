@@ -21,14 +21,14 @@ int	is_flag(char c)
 	return (0);
 }
 
-void	populate_flags(char **aformat_cpy, t_arg **ainfo)
+void	populate_flags(t_misc **amisc, t_arg **ainfo)
 {
-	while (**aformat_cpy)
+	while (*(*amisc)->fmt_str)
 	{
-		if (is_flag(**aformat_cpy))
-			(*ainfo)->flags[get_idx_flag(**aformat_cpy)] = '1';
+		if (is_flag(*(*amisc)->fmt_str))
+			(*ainfo)->flags[get_idx_flag(*(*amisc)->fmt_str)] = '1';
 		else
 			break ;
-		(*aformat_cpy)++;
+		(*amisc)->fmt_str++;
 	}
 }

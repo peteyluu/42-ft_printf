@@ -25,11 +25,11 @@ int	get_byte_cnt(wchar_t wc)
 		return (4);
 }
 
-void		handle_bc_arg(t_data **aoutput, va_list ap)
+void		handle_bc_arg(t_data **aoutput, t_misc **amisc)
 {
 	// for moulinette, treat %C AND %lc as 1 byte!!!
 	//(*aoutput)->s_arg = ft_strnew(1);
 	//*(*aoutput)->s_arg = va_arg(ap, int);
-	(*aoutput)->s_arg = handle_wch(va_arg(ap, wchar_t));
+	(*aoutput)->s_arg = handle_wch(va_arg((*amisc)->ap, wchar_t));
 	(*aoutput)->free_arg = 1;
 }

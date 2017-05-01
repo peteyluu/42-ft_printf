@@ -26,11 +26,19 @@ static void	init_info(t_arg **ainfo)
 	(*ainfo)->spec = '\0';
 }
 
-static void	dispose_structs(t_arg **ainfo, t_data **aoutput)
+static void	init_misc(t_misc **amisc, const char *format)
+{
+	*amisc = (t_misc*)malloc(sizeof(t_misc));
+	(*amisc)->ret = 0;
+	(*amisc)->fmt_str = (char*)format;
+}
+
+static void	dispose_structs(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
 	ft_memdel((void**)&(*ainfo)->flags);
 	ft_memdel((void**)ainfo);
 	ft_memdel((void**)aoutput);
+	free(*amisc);
 }
 
 static void	ft_putstr_nbytes(char *s, size_t n)
@@ -42,46 +50,50 @@ static void	ft_putstr_nbytes(char *s, size_t n)
 	}
 }
 
+static int	get_output(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
+{
+	(*amisc)->fmt_str++;
+	init_output(aoutput);
+	init_info(ainfo);
+	populate_info(ainfo, amisc);
+	if ((*ainfo)->spec == '\0' && (*ainfo)->width == -1)
+		return (0);
+	handle_va_arg(ainfo, aoutput, amisc);
+	(*amisc)->ret += populate_result(ainfo, aoutput);
+	ft_putstr_nbytes((*aoutput)->result, (*aoutput)->width);
+	ft_memdel((void**)&(*aoutput)->result);
+	if ((*aoutput)->free_arg)
+		ft_memdel((void**)&(*aoutput)->s_arg);
+	return (1);
+}
+
 int		ft_printf(const char *format, ...)
 {
-	char	*fmt_cpy;
-	int	ret;
-	va_list	ap;
 	t_arg	*info;
 	t_data	*output;
+	t_misc	*misc;
 
-	ret = 0;
 	info = NULL;
 	output = NULL;
-	fmt_cpy = (char*)format;
-	va_start(ap, format);
-	while (*fmt_cpy)
+	init_misc(&misc, format);
+	va_start(misc->ap, format);
+	while (*misc->fmt_str)
 	{
-		if (*fmt_cpy == '%' && *(fmt_cpy + 1) != '\0')
+		if (*misc->fmt_str == '%' && *(misc->fmt_str + 1) != '\0')
 		{
-			fmt_cpy++;
-			init_output(&output);
-			init_info(&info);
-			populate_info(&fmt_cpy, &info, ap);
-			if (info->spec == '\0' && info->width == -1)
+			if (!get_output(&info, &output, &misc))
 				continue ;
-			handle_va_arg(&info, &output, &fmt_cpy, ap);
-			ret += populate_result(&info, &output);
-			ft_putstr_nbytes(output->result, output->width);
-			ft_memdel((void**)&output->result);
-			if (output->free_arg)
-				ft_memdel((void**)&output->s_arg);
 		}
-		else if (*fmt_cpy == '%' && *(fmt_cpy + 1) == '\0')
+		else if (*misc->fmt_str == '%' && *(misc->fmt_str + 1) == '\0')
 			break ;
 		else
 		{
-			ft_putchar(*fmt_cpy);
-			ret++;
+			ft_putchar(*misc->fmt_str);
+			misc->ret++;
 		}
-		fmt_cpy++;
+		misc->fmt_str++;
 	}
-	dispose_structs(&info, &output);
-	va_end(ap);
-	return (ret);
+	dispose_structs(&info, &output, &misc);
+	va_end(misc->ap);
+	return (misc->ret);
 }

@@ -7,37 +7,37 @@ static int	is_length(char c)
 	return (0);
 }
 
-static int	get_length(char **aformat_cpy)
+static int	get_length(t_misc **amisc)
 {
-	if (**aformat_cpy == 'h' && *(*aformat_cpy + 1) == 'h')
+	if (*(*amisc)->fmt_str == 'h' && *((*amisc)->fmt_str + 1) == 'h')
 		return (hh);
-	else if (**aformat_cpy == 'l' && *(*aformat_cpy + 1) == 'l')
+	else if (*(*amisc)->fmt_str == 'l' && *((*amisc)->fmt_str + 1) == 'l')
 		return (ll);
-	else if (**aformat_cpy == 'h')
+	else if (*(*amisc)->fmt_str == 'h')
 		return (h);
-	else if (**aformat_cpy == 'l')
+	else if (*(*amisc)->fmt_str == 'l')
 		return (l);
-	else if (**aformat_cpy == 'j')
+	else if (*(*amisc)->fmt_str == 'j')
 		return (j);
-	else if (**aformat_cpy == 'z')
+	else if (*(*amisc)->fmt_str == 'z')
 		return (z);
 	return (0);
 }
 
-void		populate_length(char **aformat_cpy, t_arg **ainfo)
+void		populate_length(t_misc **amisc, t_arg **ainfo)
 {
 	int	tmp;
 
-	while (**aformat_cpy)
+	while (*(*amisc)->fmt_str)
 	{
-		if (is_length(**aformat_cpy))
+		if (is_length(*(*amisc)->fmt_str))
 		{
-			tmp = get_length(aformat_cpy);
+			tmp = get_length(amisc);
 			if (tmp > (*ainfo)->leng)
 				(*ainfo)->leng = tmp;
 			if (tmp == hh || tmp == ll)
-				(*aformat_cpy)++;
-			(*aformat_cpy)++;
+				(*amisc)->fmt_str++;
+			(*amisc)->fmt_str++;
 		}
 		else
 			break ;

@@ -9,21 +9,21 @@ static int	is_specifier(char c)
 	return (0);
 }
 
-void		populate_specifier(char **aformat_cpy, t_arg **ainfo)
+void		populate_specifier(t_misc **amisc, t_arg **ainfo)
 {
-	while (**aformat_cpy)
+	while (*(*amisc)->fmt_str)
 	{
-		if (is_specifier(**aformat_cpy))
+		if (is_specifier(*(*amisc)->fmt_str))
 		{
-			(*ainfo)->spec = **aformat_cpy;
+			(*ainfo)->spec = *(*amisc)->fmt_str;
 			break ;
-	}
+		}
 		else
 		{
-			if (is_flag(**aformat_cpy))
+			if (is_flag(*(*amisc)->fmt_str))
 			{
-				(*ainfo)->flags[get_idx_flag(**aformat_cpy)] = '1';
-				(*aformat_cpy)++;
+				(*ainfo)->flags[get_idx_flag(*(*amisc)->fmt_str)] = '1';
+				(*amisc)->fmt_str++;
 			}
 			else
 				break ;

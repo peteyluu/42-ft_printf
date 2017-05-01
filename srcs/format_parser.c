@@ -1,10 +1,10 @@
 #include "../incs/ft_printf.h"
 
-void	populate_info(char **aformat_cpy, t_arg **ainfo, va_list ap)
+void	populate_info(t_arg **ainfo, t_misc **amisc)
 {
-	populate_flags(aformat_cpy, ainfo);
-	populate_width(aformat_cpy, ainfo, ap);
-	populate_precision(aformat_cpy, ainfo, ap);
-	populate_length(aformat_cpy, ainfo);
-	populate_specifier(aformat_cpy, ainfo);
+	populate_flags(amisc, ainfo);
+	populate_width(amisc, ainfo);
+	populate_precision(amisc, ainfo);
+	populate_length(amisc, ainfo);
+	populate_specifier(amisc, ainfo);
 }

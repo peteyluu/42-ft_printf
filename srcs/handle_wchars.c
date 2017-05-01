@@ -47,11 +47,11 @@ static char	*handle_wstr(wchar_t *ws, t_arg **ainfo)
 	return (ps);
 }
 
-void		handle_bs_arg(t_data **aoutput, t_arg **ainfo, va_list ap)
+void		handle_bs_arg(t_data **aoutput, t_arg **ainfo, t_misc **amisc)
 {
 	wchar_t	*ws_arg;
 
-	if (!(ws_arg = va_arg(ap, wchar_t*)))
+	if (!(ws_arg = va_arg((*amisc)->ap, wchar_t*)))
 		(*aoutput)->s_arg = "(null)";
 	else
 	{
