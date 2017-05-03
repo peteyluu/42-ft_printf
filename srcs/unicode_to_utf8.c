@@ -2,7 +2,8 @@
 
 void	unicode_to_utf8(wchar_t c, char **as)
 {
-	if (c<(1<<7))
+	//if (c<(1<<7))
+	if (c < 255)
 		*(*as)++ = (unsigned char)(c);
 	else if (c<(1<<11))
 	{
