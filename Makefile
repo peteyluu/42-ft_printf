@@ -5,6 +5,7 @@ CC	= gcc
 FLAGS	= -Wall -Wextra -Werror
 
 SRCS    =  srcs/ft_printf.c \
+	   srcs/init_structs.c \
 	   srcs/bool_flags.c \
 	   srcs/bool_hlprs.c \
 	   srcs/format_parser.c \

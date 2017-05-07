@@ -1,38 +1,5 @@
 #include "../incs/ft_printf.h"
 
-static void	init_output(t_data **aoutput)
-{
-	if (!*aoutput)
-		*aoutput = (t_data*)malloc(sizeof(t_data));
-	(*aoutput)->s_arg = NULL;
-	(*aoutput)->free_arg = 0;
-	(*aoutput)->len = 0;
-	(*aoutput)->flag = 0;
-	(*aoutput)->width = 0;
-	(*aoutput)->result = NULL;
-	(*aoutput)->presult = NULL;
-}
-
-static void	init_info(t_arg **ainfo)
-{
-	if (!*ainfo)
-		*ainfo = (t_arg*)malloc(sizeof(t_arg));
-	else
-		ft_memdel((void**)&(*ainfo)->flags);
-	(*ainfo)->flags = ft_strnew(NUM_FLAGS);
-	(*ainfo)->width = -1;
-	(*ainfo)->precis = -1;
-	(*ainfo)->leng = none;
-	(*ainfo)->spec = '\0';
-}
-
-static void	init_misc(t_misc **amisc, const char *format)
-{
-	*amisc = (t_misc*)malloc(sizeof(t_misc));
-	(*amisc)->ret = 0;
-	(*amisc)->fmt_str = (char*)format;
-}
-
 static void	dispose_structs(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
 	ft_memdel((void**)&(*ainfo)->flags);
@@ -41,7 +8,7 @@ static void	dispose_structs(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 	free(*amisc);
 }
 
-static void	ft_putstr_nbytes(char *s, size_t n)
+static void	put_nbytes(char *s, size_t n)
 {
 	while (n--)
 	{
@@ -62,7 +29,7 @@ static int	get_output(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 	if ((*ainfo)->spec != 'n')
 	{
 		(*amisc)->ret += populate_result(ainfo, aoutput);
-		ft_putstr_nbytes((*aoutput)->result, (*aoutput)->width);
+		put_nbytes((*aoutput)->result, (*aoutput)->width);
 		ft_memdel((void**)&(*aoutput)->result);
 		if ((*aoutput)->free_arg)
 			ft_memdel((void**)&(*aoutput)->s_arg);
