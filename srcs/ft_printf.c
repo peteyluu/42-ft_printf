@@ -59,11 +59,14 @@ static int	get_output(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 	if ((*ainfo)->spec == '\0' && (*ainfo)->width == -1)
 		return (0);
 	handle_va_arg(ainfo, aoutput, amisc);
-	(*amisc)->ret += populate_result(ainfo, aoutput);
-	ft_putstr_nbytes((*aoutput)->result, (*aoutput)->width);
-	ft_memdel((void**)&(*aoutput)->result);
-	if ((*aoutput)->free_arg)
-		ft_memdel((void**)&(*aoutput)->s_arg);
+	if ((*ainfo)->spec != 'n')
+	{
+		(*amisc)->ret += populate_result(ainfo, aoutput);
+		ft_putstr_nbytes((*aoutput)->result, (*aoutput)->width);
+		ft_memdel((void**)&(*aoutput)->result);
+		if ((*aoutput)->free_arg)
+			ft_memdel((void**)&(*aoutput)->s_arg);
+	}
 	return (1);
 }
 
