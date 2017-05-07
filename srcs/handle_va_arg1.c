@@ -23,7 +23,9 @@ void		handle_bou_arg(t_data **aoutput, t_misc **amisc, char spec)
 
 void		handle_di_arg(t_data **aoutput, t_misc **amisc, int leng)
 {
-	if (leng == hh)
+	if (leng == none)
+		(*aoutput)->s_arg = ft_itoa(va_arg((*amisc)->ap, int));
+	else if (leng == hh)
 		(*aoutput)->s_arg = ft_itoa((int)(signed char)va_arg((*amisc)->ap, int));
 	else if (leng == h)
 		(*aoutput)->s_arg = ft_itoa((int)(short int)va_arg((*amisc)->ap, int));
@@ -33,16 +35,16 @@ void		handle_di_arg(t_data **aoutput, t_misc **amisc, int leng)
 		(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg((*amisc)->ap, long int));
 	else if (leng == j)
 		(*aoutput)->s_arg = intmax_to_a(va_arg((*amisc)->ap, intmax_t));
-	else if (leng == z)
-		(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg((*amisc)->ap, size_t));
 	else
-		(*aoutput)->s_arg = ft_itoa(va_arg((*amisc)->ap, int));
+		(*aoutput)->s_arg = intmax_to_a((intmax_t)va_arg((*amisc)->ap, size_t));
 	(*aoutput)->free_arg = 1;
 }
 
 void		handle_ouxX_arg(t_data **aoutput, t_misc **amisc, int leng, char spec)
 {
-	if (leng == hh)
+	if (leng == none)
+		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned int)va_arg((*amisc)->ap, int), get_base(spec), spec);
+	else if (leng == hh)
 		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned char)va_arg((*amisc)->ap, int), get_base(spec), spec);
 	else if (leng == h)
 		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned short)va_arg((*amisc)->ap, int), get_base(spec), spec);
@@ -50,9 +52,7 @@ void		handle_ouxX_arg(t_data **aoutput, t_misc **amisc, int leng, char spec)
 		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)va_arg((*amisc)->ap, unsigned long long), get_base(spec), spec);
 	else if (leng == l)
 		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)va_arg((*amisc)->ap, unsigned long), get_base(spec), spec);
-	else if (leng == j || leng == z)
-		(*aoutput)->s_arg = uintmax_to_a_base(va_arg((*amisc)->ap, uintmax_t), get_base(spec), spec);
 	else
-		(*aoutput)->s_arg = uintmax_to_a_base((uintmax_t)(unsigned int)va_arg((*amisc)->ap, int), get_base(spec), spec);
+		(*aoutput)->s_arg = uintmax_to_a_base(va_arg((*amisc)->ap, uintmax_t), get_base(spec), spec);
 	(*aoutput)->free_arg = 1;
 }

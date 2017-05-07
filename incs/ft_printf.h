@@ -81,6 +81,7 @@ void	handle_p_arg(t_data **aoutput, t_misc **amisc, char spec);
 void	handle_bs_arg(t_data **aoutput, t_arg **ainfo, t_misc **amisc);
 void	handle_bc_arg(t_data **aoutput, t_misc **amisc);
 void	handle_def_arg(t_data **aoutput, t_misc **amisc);
+void	handle_n_arg(t_misc **amisc);
 //void	init_info(t_arg **ainfo);
 //void	init_output(t_data **aoutput);
 //void	init_misc(t_misc **amisc, const char *format);

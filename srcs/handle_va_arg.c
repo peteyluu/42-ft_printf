@@ -1,54 +1,5 @@
 #include "../incs/ft_printf.h"
 
-void	handle_n_arg(t_misc **amisc)
-{
-	int		*pi;
-	//signed char	*psc;
-	//short int	*psi;
-	//long int	*pli;
-	//long long int	*plli;
-	//intmax_t	*pimax;
-	//size_t		*psz;
-
-	//if ((*ainfo)->leng == none)
-	//{
-	//	pi = va_arg((*amisc)->ap, int*);
-	//	*pi = (*amisc)->ret;
-	//}
-	//else if ((*ainfo)->leng == hh)
-	//{
-	//	psc = va_arg((*amisc)->ap, signed char*);
-	//	*psc = (*amisc)->ret;
-	//}
-	//else if ((*ainfo)->leng == h)
-	//{
-	//	psi = va_arg((*amisc)->ap, short int*);
-	//	*psi = (*amisc)->ret;
-	//}
-	//else if ((*ainfo)->leng == l)
-	//{
-	//	pli = va_arg((*amisc)->ap, long int*);
-	//	*pli = (*amisc)->ret;
-	//}
-	//else if ((*ainfo)->leng == ll)
-	//{
-	//	plli = va_arg((*amisc)->ap, long long int*);
-	//	*plli = (*amisc)->ret;
-	//}
-	//else if ((*ainfo)->leng == j)
-	//{
-	//	pimax = va_arg((*amisc)->ap, intmax_t*);
-	//	*pimax = (*amisc)->ret;
-	//}
-	//else
-	//{
-	//	psz = va_arg((*amisc)->ap, size_t*);
-	//	*psz = (*amisc)->ret;
-	//}
-	pi = va_arg((*amisc)->ap, int*);
-	*pi = (*amisc)->ret;
-}
-
 void	handle_va_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
 	char	spec;

@@ -25,3 +25,11 @@ void	handle_def_arg(t_data **aoutput, t_misc **amisc)
 	*(*aoutput)->s_arg = *(*amisc)->fmt_str;
 	(*aoutput)->free_arg = 1;
 }
+
+void	handle_n_arg(t_misc **amisc)
+{
+	int	*pi;
+
+	pi = va_arg((*amisc)->ap, int*);
+	*pi = (*amisc)->ret;
+}
