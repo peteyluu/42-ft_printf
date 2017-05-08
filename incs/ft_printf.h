@@ -6,7 +6,7 @@
 /*   By: pluu <pluu@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/07 15:51:46 by pluu              #+#    #+#             */
-/*   Updated: 2017/05/07 15:51:53 by pluu             ###   ########.fr       */
+/*   Updated: 2017/05/08 13:58:59 by pluu             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,13 +83,13 @@ void	handle_right_just(t_arg **ainfo, t_data **aoutput, char c);
 void	handle_right_pads(t_arg **ainfo, t_data **aoutput, char c, int *ai);
 void	handle_va_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
 void	handle_s_arg(t_data **aoutput, t_misc **amisc);
-void	handle_di_arg(t_data **aoutput, t_misc **amisc, int leng);
-void	handle_c_arg(t_data **aoutput, t_misc **amisc, char spec);
+void	handle_di_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
+void	handle_c_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
 void	handle_bd_arg(t_data **aoutput, t_misc **amisc);
-void	handle_bou_arg(t_data **aoutput, t_misc **amisc, char spec);
-void	handle_ouxX_arg(t_data **aoutput, t_misc **amisc, int leng, char spec);
-void	handle_p_arg(t_data **aoutput, t_misc **amisc, char spec);
-void	handle_bs_arg(t_data **aoutput, t_arg **ainfo, t_misc **amisc);
+void	handle_bou_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
+void	handle_ouxX_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
+void	handle_p_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
+void	handle_bs_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc);
 void	handle_bc_arg(t_data **aoutput, t_misc **amisc);
 void	handle_def_arg(t_data **aoutput, t_misc **amisc);
 void	handle_n_arg(t_misc **amisc);

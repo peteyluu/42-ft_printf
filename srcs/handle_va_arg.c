@@ -6,7 +6,7 @@
 /*   By: pluu <pluu@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/07 15:55:12 by pluu              #+#    #+#             */
-/*   Updated: 2017/05/07 15:55:14 by pluu             ###   ########.fr       */
+/*   Updated: 2017/05/08 13:58:46 by pluu             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,30 +14,25 @@
 
 void	handle_va_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
-	char	spec;
-	int	leng;
-
-	spec = (*ainfo)->spec;
-	leng = (*ainfo)->leng;
-	if (spec == 's' && leng == none)
+	if ((*ainfo)->spec == 's' && (*ainfo)->leng == none)
 		handle_s_arg(aoutput, amisc);
-	else if (spec == 'd' || spec == 'i')
-		handle_di_arg(aoutput, amisc, leng);
-	else if ((spec == 'c' || spec == '%') && leng == none)
-		handle_c_arg(aoutput, amisc, spec);
-	else if (spec == 'D')
+	else if ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i')
+		handle_di_arg(ainfo, aoutput, amisc);
+	else if (((*ainfo)->spec == 'c' || (*ainfo)->spec == '%') && (*ainfo)->leng == none)
+		handle_c_arg(ainfo, aoutput, amisc);
+	else if ((*ainfo)->spec == 'D')
 		handle_bd_arg(aoutput, amisc);
-	else if (spec == 'O' || spec == 'U')
-		handle_bou_arg(aoutput, amisc, spec);
-	else if (spec == 'o' || spec == 'u' || spec == 'x' || spec == 'X')
-		handle_ouxX_arg(aoutput, amisc, leng, spec);
-	else if (spec == 'p')
-		handle_p_arg(aoutput, amisc, spec);
-	else if (spec == 'S' || (spec == 's' && leng > 0))
-		handle_bs_arg(aoutput, ainfo, amisc);
-	else if (spec == 'C' || (spec == 'c' && leng > 0))
+	else if ((*ainfo)->spec == 'O' || (*ainfo)->spec == 'U')
+		handle_bou_arg(ainfo, aoutput, amisc);
+	else if ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'u' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
+		handle_ouxX_arg(ainfo, aoutput, amisc);
+	else if ((*ainfo)->spec == 'p')
+		handle_p_arg(ainfo, aoutput, amisc);
+	else if ((*ainfo)->spec == 'S' || ((*ainfo)->spec == 's' && (*ainfo)->leng > 0))
+		handle_bs_arg(ainfo, aoutput, amisc);
+	else if ((*ainfo)->spec == 'C' || ((*ainfo)->spec == 'c' && (*ainfo)->leng > 0))
 		handle_bc_arg(aoutput, amisc);
-	else if (spec == 'n')
+	else if ((*ainfo)->spec == 'n')
 		handle_n_arg(amisc);
 	else
 		handle_def_arg(aoutput, amisc);

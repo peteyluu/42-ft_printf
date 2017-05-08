@@ -6,7 +6,7 @@
 /*   By: pluu <pluu@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/07 15:55:24 by pluu              #+#    #+#             */
-/*   Updated: 2017/05/07 15:55:27 by pluu             ###   ########.fr       */
+/*   Updated: 2017/05/08 13:56:11 by pluu             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@ void	handle_s_arg(t_data **aoutput, t_misc **amisc)
 		(*aoutput)->s_arg = "(null)";
 }
 
-void	handle_c_arg(t_data **aoutput, t_misc **amisc, char spec)
+void	handle_c_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
 	(*aoutput)->s_arg = ft_strnew(1);
-	*(*aoutput)->s_arg = (spec == 'c' ? va_arg((*amisc)->ap, int) : '%');
+	*(*aoutput)->s_arg = ((*ainfo)->spec == 'c' ? va_arg((*amisc)->ap, int) : '%');
 	(*aoutput)->free_arg = 1;
 }
 

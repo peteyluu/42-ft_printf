@@ -6,7 +6,7 @@
 /*   By: pluu <pluu@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/07 15:55:34 by pluu              #+#    #+#             */
-/*   Updated: 2017/05/07 15:55:36 by pluu             ###   ########.fr       */
+/*   Updated: 2017/05/08 13:58:37 by pluu             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ static char	*handle_wstr(wchar_t *ws, t_arg **ainfo)
 	return (ps);
 }
 
-void		handle_bs_arg(t_data **aoutput, t_arg **ainfo, t_misc **amisc)
+void		handle_bs_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 {
 	wchar_t	*ws_arg;
 
