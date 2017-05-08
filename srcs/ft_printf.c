@@ -6,7 +6,7 @@
 /*   By: pluu <pluu@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/07 15:53:17 by pluu              #+#    #+#             */
-/*   Updated: 2017/05/07 15:53:19 by pluu             ###   ########.fr       */
+/*   Updated: 2017/05/08 14:23:16 by pluu             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,33 +49,39 @@ static int	get_output(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
 	return (1);
 }
 
-int		ft_printf(const char *format, ...)
+static void	handle_printf(t_misc **amisc)
 {
 	t_arg	*info;
 	t_data	*output;
-	t_misc	*misc;
 
 	info = NULL;
 	output = NULL;
-	init_misc(&misc, format);
-	va_start(misc->ap, format);
-	while (*misc->fmt_str)
+	while (*(*amisc)->fmt_str)
 	{
-		if (*misc->fmt_str == '%' && *(misc->fmt_str + 1) != '\0')
+		if (*(*amisc)->fmt_str == '%' && *((*amisc)->fmt_str + 1) != '\0')
 		{
-			if (!get_output(&info, &output, &misc))
+			if (!get_output(&info, &output, amisc))
 				continue ;
 		}
-		else if (*misc->fmt_str == '%' && *(misc->fmt_str + 1) == '\0')
+		else if (*(*amisc)->fmt_str == '%' && *((*amisc)->fmt_str + 1) == '\0')
 			break ;
 		else
 		{
-			ft_putchar(*misc->fmt_str);
-			misc->ret++;
+			ft_putchar(*(*amisc)->fmt_str);
+			(*amisc)->ret++;
 		}
-		misc->fmt_str++;
+		(*amisc)->fmt_str++;
 	}
-	dispose_structs(&info, &output, &misc);
+	dispose_structs(&info, &output, amisc);
+}
+
+int		ft_printf(const char *format, ...)
+{
+	t_misc	*misc;
+
+	init_misc(&misc, format);
+	va_start(misc->ap, format);
+	handle_printf(&misc);
 	va_end(misc->ap);
 	return (misc->ret);
 }
