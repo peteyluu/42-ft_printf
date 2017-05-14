@@ -17,7 +17,7 @@ static int	uintmax_numlen(uintmax_t n, int b)
 	int	len;
 
 	len = 0;
-	while (n) 
+	while (n)
 	{
 		len++;
 		n /= b;
@@ -27,7 +27,7 @@ static int	uintmax_numlen(uintmax_t n, int b)
 
 char		*uintmax_to_a_base(uintmax_t value, int base, char spec)
 {
-	int	len;
+	int		len;
 	char	*s;
 	char	*ps;
 	char	*b;

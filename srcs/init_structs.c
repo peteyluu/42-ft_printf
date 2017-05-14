@@ -12,17 +12,17 @@
 
 #include "../incs/ft_printf.h"
 
-void	init_output(t_data **aoutput)
+void	init_output(t_data **aout)
 {
-	if (!*aoutput)
-		*aoutput = (t_data*)malloc(sizeof(t_data));
-	(*aoutput)->s_arg = NULL;
-	(*aoutput)->free_arg = 0;
-	(*aoutput)->len = 0;
-	(*aoutput)->flag = 0;
-	(*aoutput)->width = 0;
-	(*aoutput)->result = NULL;
-	(*aoutput)->presult = NULL;
+	if (!*aout)
+		*aout = (t_data*)malloc(sizeof(t_data));
+	(*aout)->s_arg = NULL;
+	(*aout)->free_arg = 0;
+	(*aout)->len = 0;
+	(*aout)->flag = 0;
+	(*aout)->width = 0;
+	(*aout)->result = NULL;
+	(*aout)->presult = NULL;
 }
 
 void	init_info(t_arg **ainfo)

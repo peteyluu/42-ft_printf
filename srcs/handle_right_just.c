@@ -12,12 +12,12 @@
 
 #include "../incs/ft_printf.h"
 
-static int	is_valid_spec_x_width(t_arg **ainfo, t_data **aoutput)
+static int	is_valid_spec_x_width(t_arg **ainfo, t_data **aout)
 {
 	int	tmp;
 
 	tmp = 0;
-	if ((*ainfo)->width == (*aoutput)->width && (*ainfo)->precis > (*aoutput)->len)
+	if ((*ainfo)->width == (*aout)->width && (*ainfo)->precis > (*aout)->len)
 	{
 		tmp = (*ainfo)->width - (*ainfo)->precis - 2;
 		if (tmp > 0)
@@ -26,60 +26,70 @@ static int	is_valid_spec_x_width(t_arg **ainfo, t_data **aoutput)
 	return (1);
 }
 
-static void	handle_right_hlpr0(t_arg **ainfo, t_data **aoutput, int *ai)
+static void	handle_right_hlpr0(t_arg **ainfo, t_data **aout, int *ai)
 {
 	int	j;
 
 	j = 0;
-	if ((is_plus_flag(ainfo) && is_valid_width(ainfo, aoutput)) || is_space_flag(ainfo))
+	if ((is_plus_flag(ainfo) && is_valid_width(ainfo, aout)) ||
+		is_space_flag(ainfo))
 		j = 1;
-	else if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0 &&
+	else if (is_hash_flag(ainfo) && ft_strcmp((*aout)->s_arg, "0") != 0 &&
 		((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
 		j = 2;
-	else if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') && *(*aoutput)->s_arg == '-')
+	else if (((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i') &&
+			*(*aout)->s_arg == '-')
 		j = 1;
-	ft_memset(((*aoutput)->presult), ' ', *ai - j);
-	(*aoutput)->presult += (*ai - j);
+	ft_memset(((*aout)->presult), ' ', *ai - j);
+	(*aout)->presult += (*ai - j);
 	if (j == 2)
-		*ai = (*ainfo)->precis - (*aoutput)->len;
+		*ai = (*ainfo)->precis - (*aout)->len;
 	else
-		*ai = (*ainfo)->precis - (*aoutput)->len + j;
+		*ai = (*ainfo)->precis - (*aout)->len + j;
 }
 
-static void	handle_right_hlpr1(t_arg **ainfo, t_data **aoutput, int *ai)
+static void	handle_right_hlpr1(t_arg **ainfo, t_data **aout, int *ai)
 {
-	if ((*ainfo)->precis == 0 && ft_strcmp((*aoutput)->s_arg, "0") == 0 &&
-		(!is_hash_flag(ainfo) || (is_hash_flag(ainfo) && ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))))
-		*ai = (*aoutput)->width;
+	if ((*ainfo)->precis == 0 && ft_strcmp((*aout)->s_arg, "0") == 0 &&
+		(!is_hash_flag(ainfo) || (is_hash_flag(ainfo) &&
+		((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))))
+		*ai = (*aout)->width;
 	else
-		*ai = (*aoutput)->width - (*aoutput)->len;
+		*ai = (*aout)->width - (*aout)->len;
 }
 
-void	handle_right_just(t_arg **ainfo, t_data **aoutput, char c)
+static void	is_neg(t_arg **ainfo, t_data **aout, char c, int *aj)
+{
+	if (*(*aout)->s_arg == '-' && c == '0' &&
+		((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
+		*aj = 1;
+}
+
+void		handle_right_just(t_arg **ainfo, t_data **aout, char c)
 {
 	int	i;
 	int	j;
 
 	j = 0;
-	if ((*ainfo)->spec == 'p' || ((is_hash_flag(ainfo) && ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
-		&& is_valid_spec_x_width(ainfo, aoutput))))
-		i = (*aoutput)->width - (*aoutput)->len - 2;
-	else if ((*ainfo)->precis != -1 && (*ainfo)->width != -1 && (*ainfo)->width > (*ainfo)->precis)
+	if ((*ainfo)->spec == 'p' || ((is_hash_flag(ainfo) &&
+		((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
+		&& is_valid_spec_x_width(ainfo, aout))))
+		i = (*aout)->width - (*aout)->len - 2;
+	else if ((*ainfo)->precis != -1 && (*ainfo)->width != -1 &&
+			(*ainfo)->width > (*ainfo)->precis)
 	{
-		i = (*aoutput)->width - (*ainfo)->precis;
-		if ((*ainfo)->precis > (*aoutput)->len)
-			handle_right_hlpr0(ainfo, aoutput, &i);
-		else if ((*ainfo)->precis < (*aoutput)->len && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'
-			|| (*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'u'
-			|| (*ainfo)->spec == 'U' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
-			handle_right_hlpr1(ainfo, aoutput, &i);
-		else if ((*aoutput)->len > (*ainfo)->precis && (*ainfo)->spec != 's')
-			i = (*aoutput)->width - (*aoutput)->len;
+		i = (*aout)->width - (*ainfo)->precis;
+		if ((*ainfo)->precis > (*aout)->len)
+			handle_right_hlpr0(ainfo, aout, &i);
+		else if ((*ainfo)->precis < (*aout)->len && is_dioux(ainfo))
+			handle_right_hlpr1(ainfo, aout, &i);
+		else if ((*aout)->len > (*ainfo)->precis && (*ainfo)->spec != 's')
+			i = (*aout)->width - (*aout)->len;
 	}
 	else
-		i = (*aoutput)->width - (*aoutput)->len;
-	handle_right_pads(ainfo, aoutput, c, &i);
-	if (*(*aoutput)->s_arg == '-' && c == '0' && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
-		j = 1;
-	ft_memcpy(((*aoutput)->presult) + i, (*aoutput)->s_arg + j, (*aoutput)->width - ((*aoutput)->presult - (*aoutput)->result) - i);
+		i = (*aout)->width - (*aout)->len;
+	handle_right_pad(ainfo, aout, c, &i);
+	is_neg(ainfo, aout, c, &j);
+	ft_memcpy(((*aout)->presult) + i, (*aout)->s_arg + j,
+				(*aout)->width - ((*aout)->presult - (*aout)->result) - i);
 }

@@ -12,7 +12,7 @@
 
 #include "../incs/ft_printf.h"
 
-int	get_idx_flag(char c)
+int		get_idx_flag(char c)
 {
 	if (c == '-')
 		return (MINUS_IDX);
@@ -26,7 +26,7 @@ int	get_idx_flag(char c)
 		return (HASH_IDX);
 }
 
-int	is_flag(char c)
+int		is_flag(char c)
 {
 	if (c == '-' || c == '+' || c == ' ' || c == '0' || c == '#')
 		return (1);

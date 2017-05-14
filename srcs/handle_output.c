@@ -12,60 +12,63 @@
 
 #include "../incs/ft_printf.h"
 
-static int	pop_ox_prefix(t_arg **ainfo, t_data **aoutput)
+static int	pop_ox_prefix(t_arg **ainfo, t_data **aout)
 {
 	int	tmp;
 
 	tmp = 0;
-	*(*aoutput)->presult++ = '0';
+	*(*aout)->presult++ = '0';
 	tmp = 1;
 	if ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
 	{
-		*(*aoutput)->presult++ = (*ainfo)->spec;
+		*(*aout)->presult++ = (*ainfo)->spec;
 		tmp = 2;
 	}
 	return (tmp);
 }
 
-static void	pop_res_hlpr(t_arg **ainfo, t_data **aoutput)
+static void	pop_res_hlpr(t_arg **ainfo, t_data **aout, int offset)
 {
-	int	 offset_width;
-
-	offset_width = 0;
-	if ((*ainfo)->flags[PLUS_IDX] && *(*aoutput)->s_arg != '-'
-		&& ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' || (*ainfo)->spec == 'D'))
+	if ((*ainfo)->flags[PLUS_IDX] && *(*aout)->s_arg != '-' &&
+		((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' ||
+		(*ainfo)->spec == 'D'))
 	{
-		*(*aoutput)->presult++ = '+';
-		offset_width++;
+		*(*aout)->presult++ = '+';
+		offset++;
 	}
-	if ((*ainfo)->flags[SPACE_IDX] && (*ainfo)->spec != 'p' && is_valid_space_flag(ainfo, aoutput))
+	if ((*ainfo)->flags[SPACE_IDX] && (*ainfo)->spec != 'p' &&
+		is_valid_space_flag(ainfo, aout))
 	{
-		*(*aoutput)->presult++ = ' ';
-		offset_width++;
+		*(*aout)->presult++ = ' ';
+		offset++;
 	}
-	if ((*ainfo)->flags[HASH_IDX] && ft_strcmp((*aoutput)->s_arg, "0") != 0
-		&& ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' || (*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
-		offset_width += pop_ox_prefix(ainfo, aoutput);
+	if ((*ainfo)->flags[HASH_IDX] && ft_strcmp((*aout)->s_arg, "0") != 0 &&
+		((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O' ||
+		(*ainfo)->spec == 'x' || (*ainfo)->spec == 'X'))
+		offset += pop_ox_prefix(ainfo, aout);
 	if ((*ainfo)->spec == 'p')
 	{
-		*(*aoutput)->presult++ = '0';
-		*(*aoutput)->presult++ = 'x';
-		offset_width += 2;
+		*(*aout)->presult++ = '0';
+		*(*aout)->presult++ = 'x';
+		offset += 2;
 	}
-	ft_memcpy(((*aoutput)->presult), (*aoutput)->s_arg, (*aoutput)->width - offset_width);
+	ft_memcpy(((*aout)->presult), (*aout)->s_arg, (*aout)->width - offset);
 }
 
-int	populate_result(t_arg **ainfo, t_data **aoutput)
+int			populate_result(t_arg **ainfo, t_data **aout)
 {
-	(*aoutput)->len = ft_strlen((*aoutput)->s_arg);	
-	if ((*aoutput)->len == 0 && ((*ainfo)->spec == 'c' || (*ainfo)->spec == 'C'))
-		(*aoutput)->len = 1;
-	get_min_width(ainfo, aoutput);
-	get_precis(ainfo, aoutput);
-	update_result(ainfo, aoutput);
-	if (is_width_pad(ainfo, (*aoutput)->len))
-		width_padding(ainfo, aoutput);
+	int	offset;
+
+	offset = 0;
+	(*aout)->len = ft_strlen((*aout)->s_arg);
+	if ((*aout)->len == 0 && ((*ainfo)->spec == 'c' || (*ainfo)->spec == 'C'))
+		(*aout)->len = 1;
+	get_min_width(ainfo, aout);
+	get_precis(ainfo, aout);
+	update_result(ainfo, aout);
+	if (is_width_pad(ainfo, (*aout)->len))
+		width_padding(ainfo, aout);
 	else
-		pop_res_hlpr(ainfo, aoutput);
-	return ((*aoutput)->width);
+		pop_res_hlpr(ainfo, aout, offset);
+	return ((*aout)->width);
 }

@@ -14,7 +14,7 @@
 
 static char	*handle_wch(wchar_t wc)
 {
-	int	num_bytes;
+	int		num_bytes;
 	char	*s;
 	char	*ps;
 
@@ -25,7 +25,7 @@ static char	*handle_wch(wchar_t wc)
 	return (ps);
 }
 
-int		get_byte_cnt(wchar_t wc)
+int			get_byte_cnt(wchar_t wc)
 {
 	if (wc < 128)
 		return (1);
@@ -37,8 +37,8 @@ int		get_byte_cnt(wchar_t wc)
 		return (4);
 }
 
-void		handle_bc_arg(t_data **aoutput, t_misc **amisc)
+void		handle_bc_arg(t_data **aout, t_misc **amisc)
 {
-	(*aoutput)->s_arg = handle_wch(va_arg((*amisc)->ap, wchar_t));
-	(*aoutput)->free_arg = 1;
+	(*aout)->s_arg = handle_wch(va_arg((*amisc)->ap, wchar_t));
+	(*aout)->free_arg = 1;
 }

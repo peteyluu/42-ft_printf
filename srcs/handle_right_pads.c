@@ -12,62 +12,63 @@
 
 #include "../incs/ft_printf.h"
 
-static void	handle_right_pads0(t_data **aoutput, char c, int *ai)
+static void	handle_right_pads0(t_data **aout, char c, int *ai)
 {
 	(*ai)--;
 	if (c == ' ')
 	{
-		ft_memset((*aoutput)->presult, c, *ai);
-		*((*aoutput)->presult++ + *ai) = (*aoutput)->flag;
+		ft_memset((*aout)->presult, c, *ai);
+		*((*aout)->presult++ + *ai) = (*aout)->flag;
 	}
 	else
 	{
-		*(*aoutput)->presult++ = (*aoutput)->flag;
-		ft_memset((*aoutput)->presult, c, *ai);
+		*(*aout)->presult++ = (*aout)->flag;
+		ft_memset((*aout)->presult, c, *ai);
 	}
 }
 
-static void	handle_right_pads1(t_data **aoutput, char c, int *ai)
+static void	handle_right_pads1(t_data **aout, char c, int *ai)
 {
 	if (*ai)
 	{
 		if (c == ' ')
 		{
-			ft_memset((*aoutput)->presult, c, *ai);
-			*((*aoutput)->presult + *ai) = '0';
-			*((*aoutput)->presult + *ai + 1) = (*aoutput)->flag;
+			ft_memset((*aout)->presult, c, *ai);
+			*((*aout)->presult + *ai) = '0';
+			*((*aout)->presult + *ai + 1) = (*aout)->flag;
 		}
 		else
 		{
-			*((*aoutput)->presult) = '0';
-			*((*aoutput)->presult + 1) = (*aoutput)->flag;
-			ft_memset((*aoutput)->presult + 2, c, *ai);
+			*((*aout)->presult) = '0';
+			*((*aout)->presult + 1) = (*aout)->flag;
+			ft_memset((*aout)->presult + 2, c, *ai);
 		}
 	}
 	else
 	{
-		*((*aoutput)->presult) = '0';
-		*((*aoutput)->presult + 1) = (*aoutput)->flag;
+		*((*aout)->presult) = '0';
+		*((*aout)->presult + 1) = (*aout)->flag;
 	}
 	(*ai) += 2;
 }
 
-void	handle_right_pads(t_arg **ainfo, t_data **aoutput, char c, int *ai)
+void		handle_right_pad(t_arg **ainfo, t_data **aout, char c, int *ai)
 {
-	(*aoutput)->flag = find_flag(ainfo, aoutput);
-	if ((*aoutput)->flag)
+	(*aout)->flag = find_flag(ainfo, aout);
+	if ((*aout)->flag)
 	{
-		if (*ai > 1 && (*aoutput)->flag != 'x' && (*aoutput)->flag != 'X')
-			handle_right_pads0(aoutput, c, ai);
-		else if ((*aoutput)->flag == 'x' || (*aoutput)->flag == 'X')
-			handle_right_pads1(aoutput, c, ai);
+		if (*ai > 1 && (*aout)->flag != 'x' && (*aout)->flag != 'X')
+			handle_right_pads0(aout, c, ai);
+		else if ((*aout)->flag == 'x' || (*aout)->flag == 'X')
+			handle_right_pads1(aout, c, ai);
 		else
-			*(*aoutput)->presult = (*aoutput)->flag;
+			*(*aout)->presult = (*aout)->flag;
 	}
 	else
 	{
-		if (*(*aoutput)->s_arg == '-' && c == '0' && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
-			*(*aoutput)->presult++ = '-';
-		ft_memset((*aoutput)->presult, c, *ai);
+		if (*(*aout)->s_arg == '-' && c == '0' &&
+			((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
+			*(*aout)->presult++ = '-';
+		ft_memset((*aout)->presult, c, *ai);
 	}
 }

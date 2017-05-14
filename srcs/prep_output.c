@@ -12,51 +12,57 @@
 
 #include "../incs/ft_printf.h"
 
-static int	incr_width_hlpr(t_arg **ainfo, t_data **aoutput)
+static int	incr_width_hlpr(t_arg **ainfo, t_data **aout)
 {
 	int	tmp;
 
 	tmp = 0;
-	if ((*aoutput)->width == 1 || ((*ainfo)->precis > (*aoutput)->len && (*ainfo)->precis >= (*aoutput)->width)
-		|| ((*aoutput)->len >= (*ainfo)->width && (*aoutput)->len >= (*ainfo)->precis))
+	if ((*aout)->width == 1 || ((*ainfo)->precis > (*aout)->len &&
+		(*ainfo)->precis >= (*aout)->width) ||
+		((*aout)->len >= (*ainfo)->width &&
+		(*aout)->len >= (*ainfo)->precis))
 		return (2);
-	else if ((*aoutput)->width == 2)
+	else if ((*aout)->width == 2)
 		return (1);
-	else if ((*ainfo)->width > (*aoutput)->len && (*aoutput)->len > (*ainfo)->precis)
-		tmp = (*aoutput)->width - (*aoutput)->len;
-	else if ((*aoutput)->width > (*ainfo)->precis && (*ainfo)->precis > (*aoutput)->len)
-		tmp = (*aoutput)->width - (*ainfo)->precis;
+	else if ((*ainfo)->width > (*aout)->len && (*aout)->len > (*ainfo)->precis)
+		tmp = (*aout)->width - (*aout)->len;
+	else if ((*aout)->width > (*ainfo)->precis &&
+			(*ainfo)->precis > (*aout)->len)
+		tmp = (*aout)->width - (*ainfo)->precis;
 	return (tmp <= 1 ? tmp : 0);
 }
 
-static int	increment_width(t_arg **ainfo, t_data **aoutput)
+static int	increment_width(t_arg **ainfo, t_data **aout)
 {
 	int	cnt;
 
 	cnt = 0;
-	if (is_plus_flag(ainfo) && !is_valid_width(ainfo, aoutput) && *(*aoutput)->s_arg != '-' && (*ainfo)->spec != 'p'
-		&& ((*aoutput)->len >= (*aoutput)->width || (*ainfo)->precis > (*aoutput)->len))
+	if (is_plus_flag(ainfo) && !is_valid_width(ainfo, aout) &&
+		*(*aout)->s_arg != '-' && (*ainfo)->spec != 'p' &&
+		((*aout)->len >= (*aout)->width || (*ainfo)->precis > (*aout)->len))
 		cnt++;
-	if (is_space_flag(ainfo) && is_valid_space_flag(ainfo, aoutput)
-		&& ((*aoutput)->width <= (*ainfo)->precis || (*aoutput)->width <= (*aoutput)->len))
+	if (is_space_flag(ainfo) && is_valid_space_flag(ainfo, aout) &&
+		((*aout)->width <= (*ainfo)->precis || (*aout)->width <= (*aout)->len))
 		cnt++;
-	if (is_hash_flag(ainfo) && ft_strcmp((*aoutput)->s_arg, "0") != 0)
+	if (is_hash_flag(ainfo) && ft_strcmp((*aout)->s_arg, "0") != 0)
 	{
 		if ((*ainfo)->spec == 'x' || (*ainfo)->spec == 'X')
-			cnt += incr_width_hlpr(ainfo, aoutput);
-		else if ((*aoutput)->len >= (*aoutput)->width && ((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O'))
+			cnt += incr_width_hlpr(ainfo, aout);
+		else if ((*aout)->len >= (*aout)->width &&
+				((*ainfo)->spec == 'o' || (*ainfo)->spec == 'O'))
 			cnt++;
 	}
-	if ((*ainfo)->precis > (*aoutput)->len && (*ainfo)->precis >= (*aoutput)->width && *(*aoutput)->s_arg == '-'
-		&& ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
+	if ((*ainfo)->precis > (*aout)->len && (*ainfo)->precis >= (*aout)->width &&
+		*(*aout)->s_arg == '-' &&
+		((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i'))
 		cnt++;
 	if ((*ainfo)->spec == 'p')
-		cnt += incr_width_hlpr(ainfo, aoutput);
+		cnt += incr_width_hlpr(ainfo, aout);
 	return (cnt);
 }
 
-void	update_result(t_arg **ainfo, t_data **aoutput)
+void		update_result(t_arg **ainfo, t_data **aout)
 {
-	(*aoutput)->result = ft_strnew((*aoutput)->width += increment_width(ainfo, aoutput));
-	(*aoutput)->presult = (*aoutput)->result;
+	(*aout)->result = ft_strnew((*aout)->width += increment_width(ainfo, aout));
+	(*aout)->presult = (*aout)->result;
 }

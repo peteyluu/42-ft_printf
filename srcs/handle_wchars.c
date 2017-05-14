@@ -15,21 +15,20 @@
 static int	*get_idx_byte_cnt(wchar_t *ws, t_arg **ainfo)
 {
 	int	*idx_and_byte_cnt;
-	int	precis_flag;
-	int	tmp;
+	int	tmp[2];
 
-	precis_flag = 0;
+	tmp[1] = 0;
 	if ((*ainfo)->precis != -1)
-		precis_flag = 1;
+		tmp[1] = 1;
 	idx_and_byte_cnt = (int*)malloc(sizeof(int) * 2);
 	idx_and_byte_cnt[0] = 0;
 	idx_and_byte_cnt[1] = 0;
 	while (ws[idx_and_byte_cnt[0]])
 	{
-		tmp = get_byte_cnt(ws[idx_and_byte_cnt[0]]);
-		if (precis_flag)
+		tmp[0] = get_byte_cnt(ws[idx_and_byte_cnt[0]]);
+		if (tmp[1])
 		{
-			(*ainfo)->precis -= tmp;
+			(*ainfo)->precis -= tmp[0];
 			if ((*ainfo)->precis < 0)
 			{
 				(*ainfo)->precis = -1;
@@ -37,15 +36,15 @@ static int	*get_idx_byte_cnt(wchar_t *ws, t_arg **ainfo)
 			}
 		}
 		idx_and_byte_cnt[0]++;
-		idx_and_byte_cnt[1] += tmp;
+		idx_and_byte_cnt[1] += tmp[0];
 	}
 	return (idx_and_byte_cnt);
 }
 
 static char	*handle_wstr(wchar_t *ws, t_arg **ainfo)
 {
-	int	i;
-	int	*ret;
+	int		i;
+	int		*ret;
 	char	*s;
 	char	*ps;
 
@@ -59,15 +58,15 @@ static char	*handle_wstr(wchar_t *ws, t_arg **ainfo)
 	return (ps);
 }
 
-void		handle_bs_arg(t_arg **ainfo, t_data **aoutput, t_misc **amisc)
+void		handle_bs_arg(t_arg **ainfo, t_data **aout, t_misc **amisc)
 {
 	wchar_t	*ws_arg;
 
 	if (!(ws_arg = va_arg((*amisc)->ap, wchar_t*)))
-		(*aoutput)->s_arg = "(null)";
+		(*aout)->s_arg = "(null)";
 	else
 	{
-		(*aoutput)->s_arg = handle_wstr(ws_arg, ainfo);
-		(*aoutput)->free_arg = 1;
+		(*aout)->s_arg = handle_wstr(ws_arg, ainfo);
+		(*aout)->free_arg = 1;
 	}
 }

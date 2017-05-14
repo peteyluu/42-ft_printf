@@ -37,8 +37,8 @@ static char	*intmax_handle_zero(void)
 
 char		*intmax_to_a(intmax_t value)
 {
-	int	isneg;
-	int	len;
+	int		isneg;
+	int		len;
 	char	*s;
 	char	*ps;
 

@@ -29,7 +29,9 @@ int	is_zero_flag(t_arg **ainfo)
 
 int	is_plus_flag(t_arg **ainfo)
 {
-	if ((*ainfo)->flags[PLUS_IDX] && ((*ainfo)->spec == 'd' || (*ainfo)->spec == 'i' || (*ainfo)->spec == 'D' || (*ainfo)->spec == 'p'))
+	if ((*ainfo)->flags[PLUS_IDX] && ((*ainfo)->spec == 'd' ||
+			(*ainfo)->spec == 'i' || (*ainfo)->spec == 'D'
+			|| (*ainfo)->spec == 'p'))
 		return (1);
 	return (0);
 }
